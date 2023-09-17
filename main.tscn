@@ -1,0 +1,95 @@
+[gd_scene load_steps=9 format=3 uid="uid://cu8pi2jtfsckw"]
+
+[ext_resource type="PackedScene" uid="uid://24cmfb5mxxd5" path="res://player.tscn" id="1_4plvq"]
+[ext_resource type="Script" path="res://main.gd" id="1_udpuq"]
+[ext_resource type="PackedScene" uid="uid://u8qj0oa3hehu" path="res://base_enemy.tscn" id="2_6buqf"]
+[ext_resource type="Texture2D" uid="uid://cxl6ljjhu6yqd" path="res://assets/background/star_v2.png" id="4_68fkm"]
+[ext_resource type="Script" path="res://ModTimer.gd" id="5_6rulo"]
+[ext_resource type="PackedScene" uid="uid://bmg0s21l17u1n" path="res://base_bullet.tscn" id="5_ds1g4"]
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_241a4"]
+emission_shape = 3
+emission_box_extents = Vector3(4000, 4000, 1)
+particle_flag_disable_z = true
+gravity = Vector3(0, 200, 0)
+orbit_velocity_min = 0.0
+orbit_velocity_max = 0.0
+hue_variation_min = -1.0
+hue_variation_max = 1.0
+
+[sub_resource type="Curve2D" id="Curve2D_eqaiy"]
+_data = {
+"points": PackedVector2Array(0, 0, 0, 0, 121, 6, 0, 0, 0, 0, 1782, 4, 0, 0, 0, 0, 1776, -144, 0, 0, 0, 0, 122, -140, 0, 0, 0, 0, 122, 8)
+}
+point_count = 5
+
+[node name="Main" type="Node"]
+script = ExtResource("1_udpuq")
+enemy_scene = ExtResource("2_6buqf")
+
+[node name="Player" parent="." instance=ExtResource("1_4plvq")]
+position = Vector2(1033, 852)
+
+[node name="CanvasLayer2" type="CanvasLayer" parent="Player"]
+layer = -1
+
+[node name="Background" type="ColorRect" parent="Player/CanvasLayer2"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0.00392157, 1)
+
+[node name="GPUParticles2D" type="GPUParticles2D" parent="Player/CanvasLayer2"]
+position = Vector2(1032, 851)
+scale = Vector2(0.25, 0.25)
+amount = 64
+process_material = SubResource("ParticleProcessMaterial_241a4")
+texture = ExtResource("4_68fkm")
+lifetime = 5.0
+speed_scale = 0.5
+
+[node name="ModTimer" type="Timer" parent="."]
+editor_description = "Enemy Spawn Time.
+#TODO - add a more randomized spawn time that that decreases as the ScoreTimer increases. "
+wait_time = 3.0
+script = ExtResource("5_6rulo")
+
+[node name="ModIncreaseTimer" type="Timer" parent="."]
+
+[node name="ScoreTimer" type="Timer" parent="."]
+
+[node name="StartTimer" type="Timer" parent="."]
+wait_time = 2.0
+one_shot = true
+
+[node name="StartPosition" type="Marker2D" parent="."]
+position = Vector2(1031, 877)
+
+[node name="ModPath" type="Path2D" parent="."]
+position = Vector2(10, -16.0526)
+scale = Vector2(1, 3.00658)
+curve = SubResource("Curve2D_eqaiy")
+
+[node name="ModSpawnLocation" type="PathFollow2D" parent="ModPath"]
+position = Vector2(121, 6)
+rotation = -0.00120409
+
+[node name="base_bullet" parent="." instance=ExtResource("5_ds1g4")]
+
+[node name="TextureRect" type="TextureRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -77.0
+offset_right = -77.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[connection signal="hit" from="Player" to="." method="game_over"]
+[connection signal="BossTime" from="ModTimer" to="." method="_on_mod_timer_boss_time"]
+[connection signal="timeout" from="ModTimer" to="." method="_on_mod_timer_timeout"]
+[connection signal="timeout" from="ModIncreaseTimer" to="." method="_on_mod_increase_timer_timeout"]
+[connection signal="timeout" from="ScoreTimer" to="." method="_on_score_timer_timeout"]
+[connection signal="timeout" from="StartTimer" to="." method="_on_start_timer_timeout"]
